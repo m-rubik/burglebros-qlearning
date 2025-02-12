@@ -1,0 +1,5 @@
+setup.py
+src/burglebros.egg-info/PKG-INFO
+src/burglebros.egg-info/SOURCES.txt
+src/burglebros.egg-info/dependency_links.txt
+src/burglebros.egg-info/top_level.txt
