@@ -3,24 +3,22 @@
 
 import random
 from burglebros.modules.guard import Guard
-from burglebros.utilities.random_wall_generation import RandomWallGenerator
+from burglebros.utilities.wall_generation import WallGenerator
+from burglebros.utilities.graph_utils import GraphUtil
+from burglebros.configs.configs import *
 from burglebros.utilities.vprint import vprint
 
 class Floor:
-    def __init__(self, grid_size=4, wall_count=8, number=0):
+    def __init__(self, grid_size=4, wall_count=8, floor_number=0):
         self.grid_size = grid_size
         self.wall_count = wall_count
-        self.number = number # Bottom floor is 0, then it increases
+        self.number = floor_number
         self.safe_cracked = False
         self.safe_location_discovered = False
         self.grid = [['Empty' for _ in range(self.grid_size)] for _ in range(self.grid_size)]
         self.grid_all_coordinates = [(x, y) for x in range(self.grid_size) for y in range(self.grid_size)]
-        self.guard = Guard(self.grid_size, self.grid_all_coordinates, 2)
-        self.rwg = RandomWallGenerator(self.grid_size, self.wall_count)
-
-    def add_random_walls(self):
-        self.walls = self.rwg.get_random_wall_placement()
-        vprint(f"Floor {self.number} walls set: {self.walls}")
+        self.guard = Guard(self.grid_all_coordinates, starting_speed=self.number+2, guard_number=self.number, grid_size=self.grid_size)
+        self.walls = set()
 
     def generate_random_layout(self):
         # Randomly place the safe somewhere not on the starting tile
@@ -45,6 +43,41 @@ class Floor:
             if self.grid[x][y] == 'Empty':
                 self.grid[x][y] = random.choice(['Normal', 'Trap'])
 
+        # Create a graph representation of the grid
+        self.gu = GraphUtil(self.grid_size)
+        self.gu.build_graph()
+
         # Add walls
-        # TODO: When ready, uncomment this
-        # self.add_random_walls()
+        if USE_WALLS:
+            self.wall_gen = WallGenerator(self.gu)
+            self.gu.set_wall_count(self.wall_count)
+            if FIXED_WALLS:
+                self.walls = self.wall_gen.get_fixed_wall_placement(self.number)
+            else:
+                self.walls = self.wall_gen.get_random_wall_placement()
+        self.guard.add_wall_info(self.walls)
+        self.guard.add_graph_util(self.gu)
+        vprint(f"Floor {self.number} walls set: {self.walls}")
+
+    def print_grid(self):
+        print("\n")
+        for y in range(self.grid_size - 1, -1, -1):  # Start printing from top to bottom (y-axis)
+            # Print tiles with vertical walls
+            row_tiles = ""
+            for x in range(self.grid_size):
+                row_tiles += f"({x},{y})"
+                if ((x, y), (x + 1, y)) in self.walls or ((x + 1, y), (x, y)) in self.walls:
+                    row_tiles += "|"
+                else:
+                    row_tiles += " "
+            print(row_tiles)
+            
+            # Print horizontal walls if not at the bottom row
+            if y > 0:
+                row_walls = ""
+                for x in range(self.grid_size):
+                    if ((x, y - 1), (x, y)) in self.walls or ((x, y), (x, y - 1)) in self.walls:
+                        row_walls += "-----"
+                    else:
+                        row_walls += "      "
+                print(row_walls)

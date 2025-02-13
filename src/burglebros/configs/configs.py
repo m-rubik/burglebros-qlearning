@@ -1,8 +1,8 @@
 PRINT_VERBOSE = False
-NUM_ROUNDS = 10000
+NUM_ROUNDS = 300000
 LOAD_QTABLE = True
-SAVE_QTABLE = False
-QTABLE_NAME = "qtable_98.pkl"
+SAVE_QTABLE = True
+QTABLE_NAME = "qtable.pkl"
 AGENT_EXPLORING = False
 
 # Game modifiers
@@ -12,6 +12,8 @@ AGENT_ACTIONS_PER_TURN = 4
 FLOOR_COUNT = 1
 STEALTH_TOKENS = 3
 GRID_SIZE = 4 # The grid is a square GRID_SIZE x GRID_SIZE
+USE_WALLS = False # Controls whether or not to place walls
+FIXED_WALLS = False # Controls whether to use a fixed wall layout, or randomized
 
 ### NOTE/TODO: 
 # - These values do not account for walls
@@ -29,6 +31,7 @@ BEST_CASE_ACTIONS_TO_CRACK_SAFE = 1
 PUNISHMENT_FOR_MOVING = -1 # The base "reward" for moving must be a slight punishment, else we risk the agent just moving around arbitrarily to gain rewards
 PUNISHMENT_FOR_LOSING = -100 # Huge penalty for losing
 PUNISHMENT_FOR_BAD_SAFE_CRACK_ACTION_USE = -75  # Punish for trying to crack a safe when not standing on a safe, or for trying to crack a safe that is already cracked
+PUNISHMENT_FOR_ILLEGAL_MOVE_ACTION = -1000  # Punish for trying to take an illegal move action
 
 REWARD_FOR_FINDING_SAFE = 20 # Small reward for finding the safe
 REWARD_FOR_SAFE_CRACK_ATTEMPT = 30 # Small reward for attempting to crack the safe while standing on it

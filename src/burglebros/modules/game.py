@@ -16,14 +16,17 @@ class Game():
         self.agents = []
 
     def setup_game(self):
-        for _ in range(self.agent_count):
-            self.agents.append(Agent(stealth=STEALTH_TOKENS, actions_per_turn=AGENT_ACTIONS_PER_TURN))
+        for i in range(self.agent_count):
+            self.agents.append(Agent(agent_number=i, stealth=STEALTH_TOKENS, actions_per_turn=AGENT_ACTIONS_PER_TURN))
 
-        for _ in range(self.floor_count):
-            self.floors.append(Floor(grid_size=GRID_SIZE))
+        for i in range(self.floor_count):
+            self.floors.append(Floor(floor_number=i, grid_size=GRID_SIZE))
 
         for floor in self.floors:
             floor.generate_random_layout()
+            if PRINT_VERBOSE:
+                vprint(f"Average Reachability: {round(floor.gu.avg_reachability*100)}%")
+                floor.gu.plot_network()
 
         for agent in self.agents:
             agent.add_floor(self.floors[0])
