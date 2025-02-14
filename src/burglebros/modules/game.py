@@ -69,6 +69,8 @@ class Game():
                     escaped_agents.append(agent)
             if game_over:
                 break
+        for agent in self.agents:
+            vprint(f"{agent.stats}")
         if game_over:
             return game_over
         else:

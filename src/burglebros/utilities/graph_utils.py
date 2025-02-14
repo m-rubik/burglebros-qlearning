@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 import random
+from burglebros.configs.configs import *
 
 class GraphUtil():
     def __init__(self, grid_size):
@@ -54,11 +55,13 @@ class GraphUtil():
         self._graph.remove_edge(wall[0], wall[1])
         
         # Check if the grid is still fully connected
-        if not GraphUtil.is_fully_connected(self._graph):
-            # If the grid is disconnected, remove the wall (restore the edge)
-            self._graph.add_edge(wall[0], wall[1])
+        # It's not necessary to check for connectivity if using fixed walls.
+        if not FIXED_WALLS:
+            if not GraphUtil.is_fully_connected(self._graph):
+                # If the grid is disconnected, remove the wall (restore the edge)
+                self._graph.add_edge(wall[0], wall[1])
         else:
-            # The grid is still fully connected, add the wall to the set
+            # The grid is fully connected with the wall in place, so keep the wall and add it to the set
             self._walls.add(wall)
             return True
         return False
