@@ -7,6 +7,8 @@ TODO:
 - Implement n floors with n safes?
 - What happens on turn 0? What if the safe is underneath the agent at 0,0 ?
 - Add a second agent
+
+- Re-condider the definition of a hallway
 """
 
 
@@ -43,7 +45,7 @@ counter_loss_from_stealth = 0
 counter_loss_from_turns = 0
 counter_batch_wins = 0
 counter_batch_losses = 0
-avg_reachabilities = []
+avg_connectivities = []
 BATCH_SIZE = 10000
 
 for episode in range(NUM_ROUNDS):
@@ -54,7 +56,7 @@ for episode in range(NUM_ROUNDS):
         agent.add_q_table(q_table)
 
     # for floor in game.floors:
-    #     avg_reachabilities.append(round(floor.gu.avg_reachability*100))
+    #     avg_connectivities.append(round(floor.gu.avg_connectivity*100))
 
     ret_val = game.play_game()
 
@@ -84,7 +86,7 @@ for episode in range(NUM_ROUNDS):
         counter_loss_from_turns = 0
         counter_batch_wins = 0
         counter_batch_losses = 0
-        # print(sum(avg_reachabilities)/len(avg_reachabilities))
+        # print(sum(avg_connectivities)/len(avg_connectivities))
 
 print("Training Complete!")
 print("TOTAL WINS:", win_counter[-1], "TOTAL LOSSES:", loss_counter[-1])

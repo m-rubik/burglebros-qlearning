@@ -8,7 +8,9 @@ class GraphUtil():
         self.grid_size = grid_size
         self._graph = None
         self._walls = set()
-        self._avg_reachability = 1
+        self._avg_connectivity = 1
+        self._avg_path_len = 0
+        self._longest_path = 0
 
     @property
     def graph(self):
@@ -19,9 +21,16 @@ class GraphUtil():
         return self._walls
     
     @property
-    def avg_reachability(self):
-        self.compute_normalized_reachability()
-        return self._avg_reachability
+    def avg_connectivity(self):
+        return self._avg_connectivity
+    
+    @property
+    def avg_path_len(self):
+        return self._avg_path_len
+    
+    @property
+    def longest_path(self):
+        return self._longest_path
     
     @staticmethod
     def is_fully_connected(graph):
@@ -60,6 +69,7 @@ class GraphUtil():
             if not GraphUtil.is_fully_connected(self._graph):
                 # If the grid is disconnected, remove the wall (restore the edge)
                 self._graph.add_edge(wall[0], wall[1])
+                return True
         else:
             # The grid is fully connected with the wall in place, so keep the wall and add it to the set
             self._walls.add(wall)
@@ -98,20 +108,30 @@ class GraphUtil():
         else:  # Interior tiles
             return 4
     
-    def compute_normalized_reachability(self):
+    def compute_normalized_connectivity(self):
         """
         Calculates the degree of each node against its theoretical max.
         Takes the average of this calculation on all nodes
         """
-        reachability_values = []
+        connectivity_values = []
         for node in self._graph.nodes:
             d_current = self._graph.degree(node)   # Current degree
             d_max = self.max_degree(node)     # Unwalled max degree
-            reachability = d_current / d_max  # Normalized reachability
-            reachability_values.append(reachability)
-        self._avg_reachability = np.mean(reachability_values)
+            connectivity = d_current / d_max  # Normalized connectivity
+            connectivity_values.append(connectivity)
+        self._avg_connectivity = np.mean(connectivity_values)
         return
-    
+        
+    def compute_path_length_stats(self):
+        path_lengths = []
+        for source, val in dict(nx.all_pairs_all_shortest_paths(self._graph)).items():
+            for target, paths in val.items():
+                path_len = len(paths[0])-1 # networkx counts the current node as part of the path
+                path_lengths.append(path_len)
+                if path_len > self._longest_path:
+                    self._longest_path = path_len
+        self._avg_path_len = round(sum(path_lengths)/len(path_lengths))
+
     def find_shortest_path(self, source, target):
         shortest_path = nx.shortest_path(self._graph, source=source, target=target)
         return shortest_path

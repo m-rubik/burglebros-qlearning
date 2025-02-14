@@ -31,5 +31,6 @@ if __name__ == "__main__":
     gu.build_graph()
     rwg = WallGenerator(gu)
     rwg.get_random_wall_placement()
-    print(gu.compute_normalized_reachability())
+    gu.compute_normalized_connectivity()
+    gu.compute_path_length_stats()
     gu.plot_network()

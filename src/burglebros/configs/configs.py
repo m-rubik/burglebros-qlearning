@@ -12,8 +12,8 @@ AGENT_ACTIONS_PER_TURN = 4
 FLOOR_COUNT = 1
 STEALTH_TOKENS = 3
 GRID_SIZE = 4 # The grid is a square GRID_SIZE x GRID_SIZE
-USE_WALLS = False # Controls whether or not to place walls
-FIXED_WALLS = True # Controls whether to use a fixed wall layout, or randomized
+USE_WALLS = True # Controls whether or not to place walls
+FIXED_WALLS = False # Controls whether to use a fixed wall layout, or randomized
 
 ### NOTE/TODO: 
 # - These values do not account for walls

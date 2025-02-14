@@ -23,9 +23,14 @@ class Game():
             self.floors.append(Floor(floor_number=i, grid_size=GRID_SIZE))
 
         for floor in self.floors:
+
             floor.generate_random_layout()
             if PRINT_VERBOSE:
-                vprint(f"Average Reachability: {round(floor.gu.avg_reachability*100)}%")
+                floor.gu.compute_normalized_connectivity()
+                floor.gu.compute_path_length_stats()
+                vprint(f"Average Connectivity: {round(floor.gu.avg_connectivity*100)}%")
+                vprint(f"Average Path Length: {floor.gu.avg_path_len}")
+                vprint(f"Longest Path: {floor.gu.longest_path}")
                 floor.gu.plot_network()
 
         for agent in self.agents:
