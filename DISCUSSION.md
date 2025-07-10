@@ -28,21 +28,22 @@ In an environment where:
 - The safe location is randomized (though unknown until the player moves onto the tile containing the safe)
 - The only available actions are to move or attempt to crack a safe
 - The agent gets 4 actions on every turn
-
-it is not only possible for the win rate to be nearly 100%, but its actually quite likely to be 100% if it were an adult human playing)
+it is not only possible for the win rate to be nearly 100%, but its actually quite likely to be 100% if it were an adult human playing.
 
 In this simple environment, the game is quite trivial, most of the challenge of the game simply isn't present. This simplified environment is perfect for obtaining a benchmark.
 
-It would be beneficial to see how well an agent can perform in such a simplified environment before adding more features. This test aims to prove that we are able to properly generate the environment, agent and Q-learning necessities, and train a agent that is capable of achieving its most fundamental task (learning how to exploit the environment through exploration).
+It would be beneficial to see how well an agent can perform in such a simplified environment before adding more features. 
 
-When training agents, each "iteration" consists of setting up the game (randomizing safe location, etc), and having the game play all the way from the first turn until the game is over. Each game will end in a Win or a Loss, there is no Tie.
+> This phase aims to prove that we are able to properly generate the environment, agent and Q-learning necessities, and train an agent that is capable of achieving its most fundamental task -- learning how to exploit the environment through exploration.
+
+When training agents, each "iteration" consists of setting up the game (randomizing safe location, etc), and having the game play all the way from the first turn until the game is over. Each game will end in a Win or a Loss for the agent, there is no tie.
 
 In this environment, the agent was **trained on 300,000 iterations** at a **fixed exploration rate ε=0.2**.
 Then, the agent ran another 300,000 iterations without exploring, ε=0. The results from these iterations were collected to form the benchmark.
 
 Given the simplicity of this simple environment, **we are aiming to achieve a win rate near 100%**.
 
-The benchmark win rate achieved was 93%:
+The benchmark win rate achieved was 93%!
 
 > WIN RATE: 93% --- TOTAL WINS: 278783, TOTAL LOSSES: 21217
 
@@ -71,9 +72,13 @@ This is a slightly worse performance than our benchmark, however, considering th
 
 ## Phase 3 -- Adding Walls at Randomized Locations
 
+Before going wild adding walls at random locations, there are a few stipulations that must be obeyed:
+1. Only 8 walls per floor
+2. All tiles must be reachable -- the position of the walls must be such that all tiles have atleast one adjacent tile with no blocking wall between them.
 
+It's intuitive to understand that randomized wall placements will result in certain setups being more challenging than others. It's challenging to fully quantify *how exactly* the wall placement increases the difficulty, but one of the ways we can measure this is by examining the [Average Connectivity](#average-connectivity).
 
-## Average Connectivity
+### Average Connectivity
 
 Average Connectivity is a measure of how well-connected the tiles (i.e, nodes) in the grid are, taking into account the presence of walls.
 
@@ -85,34 +90,45 @@ Every tile in the grid has neighbouring tiles.
 | Edge | 3 |
 | Interior | 4 |
 
-In a grid without walls, each tile would be connected to each of its neighboring tiles, therefore each tile would have a connectivity of 100%. However, when walls are placed, certain connections between tiles and their neighbours become severed, lowering the connectivity of the tile to the overall network. Tiles with lower connectivity are more isolated and harder to reach.
+In a grid without walls, each tile would be connected to each of its neighboring tiles, therefore each tile would have a connectivity of 100%, thereby making the overall average connectivity 100%.
+
+However, once walls are placed, certain connections between tiles and their neighbours become severed, lowering the connectivity of those tiles to the overall network. Tiles with lower connectivity are more isolated and harder to reach.
 
 The average connectivity is calculated by comparing the number of neighbors each node (tile) is connected to against its theoretical maximum number of neighbor connections (i.e., its unwalled grid). The value is normalized, with each node's connectivity represented as a fraction of its maximum possible degree.
 
-### Why It’s Important:
+#### Why It’s Important:
 
-Normalized Connectivity reflects the extent to which the grid is still navigable. A high average connectivity indicates that most of the grid is still connected and traversable, while a low value means that walls have significantly fragmented the grid.
-This metric is useful for evaluating the effects of adding walls: it helps you understand whether walls are causing the grid to become too disconnected, making it harder for the agent to navigate.
+Average Connectivity reflects the extent to which the grid is navigable:
+- A high value indicates that most of the grid is still connected and easily traversable
+- a low value indicates that the grid has less options to traverse from any one tile to any other
+
+This metric is useful for evaluating the effects of adding walls: it can help explain some of the challenges the agent may face when placed in environments with randomized wall layouts, wherein it is more likely to struggle in low-connectivity environments and have an easier time when it's high-connectivity.
 
 ### The Danger of Hallways
 
 > **To illustrate the presence of a hallway, nodes that are part of a hallway have a red center.**
 
-In my experience playing *Burgle Bros.*, I found that one of the most dangerous places to find yourself in was in a hallway. It is not difficult to understand why this is the case. Take for example the following situation:
+Beyond looking at the [Average Connectivity](#average-connectivity), we can also analyse the resultant grid from a randomized wall layout to check for hallways.
+
+In my personal experience playing *Burgle Bros.*, I have found that one of the most dangerous places to find yourself was in a hallway. It is not difficult to understand why this is the case. Take for example the following situation:
 
 ![alt text](assets/images/burglebros-Hallway_Danger.drawio.png)
 
-Assuming the agent has only move actions available, the 3 walls are preventing the agent from any chance of moving out of the path of the guard. The agent must then chose to either walk through the guard and lose stealth, or wait for the guard to move through them.
+Assuming the agent has only move actions available, the 3 walls are preventing the agent from any chance of moving out of the path of the guard. The agent must then chose to either walk through the guard and lose 1 stealth, or wait for the guard to move through them (losing 1 stealth, potentially more if the guard has high movement, reaches his destination, and doubles back out of the hallway on the same turn).
 
-If instead we removed a wall to break-up the hallway as follows:
+If instead we removed a wall to break-up the hallway:
 
 ![alt text](assets/images/burglebros-Hallway_Danger_Gone.drawio.png)
 
 now the agent has an available escape path!
 
-When analysing the wall layout on any given floor, it's quite intuitively understood that layouts with more/longer hallways can lead to more dangerous game-threatening situations. To quantify what exactly a hallway is, the following definition is used:
+When analysing the wall layout on any given floor, it's easily understood that layouts with more/longer hallways can lead to more dangerous game-threatening situations, so we can expect our agent to have worse performance in said layouts.
 
-> A hallway occurs whenever a degree-1 is connected to a chain of one or more degree-2 nodes that eventually connects to a node with a degree greater than 2.
+ To quantify what exactly a hallway is, the following definition is used:
+
+> A hallway occurs whenever a degree-1 node is connected to a chain of one or more degree-2 nodes that eventually connects to a degree-3+ node.
+
+In english, that means a hallway is when there is a tile who only has one connected adjacent tile (the end of the hallway), who is connected to one or more tiles that only has 2 adjacent tiles, finally reaching a tile that has more than 2 adjacent tiles (the end of the hallway).
 
 #### Hallways v.s Average Connectivity
 
@@ -122,13 +138,15 @@ Consider the following two wall layouts. Which one appears more difficult to nav
 |----------|----------|
 | ![alt text](assets/images/few_hallways_62_connectivity.png) | ![alt text](assets/images/many_hallways_68_connectivity.png) |
 
-The example above demonstrates how even though the second layout has a higher average connectivity, that doesn't *necessarily* mean that is less dangerous of a layout
+The example above demonstrates how even though the second layout has a higher average connectivity, that doesn't *necessarily* mean that it is less dangerous of a layout.
 
-It's not only about about how connected the network is, it's about *where* that connectivity is occuring. In the previous example, the hallway from (2,0) to (1,2) contains 10 nodes. The average connectivity of just those 10 nodes is 72%. But that value is deceiving! It's high because the corner nodes are fully connected, and the edge nodes have 2 of 3 connections each.
+> It's not only about about how connected the network is, it's about *where* that connectivity is occuring. 
+
+In the previous example, the hallway from (2,0) to (1,2) contains 10 nodes. The average connectivity of just those 10 nodes is 72%. But that value is deceiving! It's high because the corner nodes are fully connected, and the edge nodes have 2 of 3 connections each.
 
 ### Average and Longest Path Lengths
 
-Consider the following wall layouts. Each layout is 16 tiles, with 8 walls. Before seeing the layouts, guess which layout is more dangerous.
+Consider the following wall layouts. Each layout is 16 tiles, with 8 walls. Before seeing the layouts, guess which layout will be the most challenging for the agent.
 
 | |Average Connectivity | Average Path Length | Longest Path | Nodes in Hallways |
 |-| ------------------- | ------------------- | ------------ | ----------------- |
@@ -136,10 +154,22 @@ Consider the following wall layouts. Each layout is 16 tiles, with 8 walls. Befo
 | Layout 2 | 63% | 4 | 9 | 5
 | Layout 3 | 65% | 5 | 11 | 4
 
-Here are the actual layouts:
+Here are the layouts:
 
 | Layout 1 | Layout 2 | Layout 3 |
 | -------- | -------- | -------- |
 | ![alt text](assets/images/low_avg_path_len.png) | ![alt text](assets/images/med_avg_path_len.png) | ![alt text](assets/images/high_avg_path_len.png)
 
-Layout 3 is an interesting one, as many of the nodes are clearly in a hallway, but they do not fit our current definition of a hallway...
+There's something tricky with Layout 3... by visual inspection, it's evident that many of the nodes are clearly in a long hallway, but they do not technically fit our current definition of a hallway! However, we can see that the longest (and average) path length are higher!
+
+By looping through every combination of nodes in the graph, and measuring the amount of edges traversed in the path between them, we can take the max of these results and that is our longest path. 
+
+In Layout 3, going from (2,0) to (3,0) takes 11 moves.
+
+So even though layout 3 *technically* has less nodes in hallways, and a high average connectivity, it is clear that this layout will be the most challenging to navigate.
+
+## Future Work
+- Run the agent in Phase 3 and find its win percentage
+- Incorporate more elements into the game (items, traps, etc)
+- Implement a second (or more) floors
+- Add a second agent acting in the same environment, following a turn order with the other agent + guards
