@@ -10,6 +10,9 @@ This project is a fan-made, modified version of the [*Burgle Bros.*](https://www
 
 The goal of this project is to implement a modified version of the *Burgle Bros.* game to create an environment for Q-Learning agents to learn how to play the game using reinforcement learning techniques. While inspired by the original game, this version contains modifications to the mechanics, and some elements of the original game may be altered or omitted. This is not an official release, and no copyrighted game assets (such as artwork or game components) from *Burgle Bros.* are included in this project.
 
+## Findings
+Reference (DISCUSSION.md)[DISCUSSION.md]
+
 ## Legal Notice
 
 This project is a non-commercial, educational tool. All intellectual property rights related to *Burgle Bros.* (including the name, mechanics, and artwork) are the property of Tim Fowers and Fowers Games. This project does not claim ownership of any of the original game content and is in no way affiliated with or endorsed by Fowers Games.
