@@ -11,7 +11,7 @@ This project is a fan-made, modified version of the [*Burgle Bros.*](https://www
 The goal of this project is to implement a modified version of the *Burgle Bros.* game to create an environment for Q-Learning agents to learn how to play the game using reinforcement learning techniques. While inspired by the original game, this version contains modifications to the mechanics, and some elements of the original game may be altered or omitted. This is not an official release, and no copyrighted game assets (such as artwork or game components) from *Burgle Bros.* are included in this project.
 
 ## Findings
-Reference (DISCUSSION.md)[DISCUSSION.md]
+Reference [DISCUSSION.md](DISCUSSION.md)
 
 ## Legal Notice
 
